@@ -2,6 +2,7 @@ package cl.bootcamp.springedumanager_2.service;
 
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
@@ -146,6 +147,32 @@ public class EstudianteService {
 
         return estudianteRepository
                 .findAll();
+
+    }
+
+
+
+    /*
+     * =====================================================
+     * BUSCAR POR ID
+     * =====================================================
+     *
+     * Utilizado por la API REST (Leccion 5)
+     * para responder:
+     *
+     * GET    /api/estudiantes/{id}
+     * PUT    /api/estudiantes/{id}
+     * DELETE /api/estudiantes/{id}
+     *
+     * Devuelve Optional en lugar de lanzar
+     * una excepcion para que el Controller
+     * decida si responde 200 o 404.
+     */
+    public Optional<Estudiante> obtenerPorId(
+            int id) {
+
+        return estudianteRepository
+                .findById(id);
 
     }
 

@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -11,6 +12,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 
 /*
@@ -71,13 +73,30 @@ public class SecurityConfig {
                 // Recursos publicos: login y assets estaticos.
                 .requestMatchers("/login", "/js/**", "/css/**").permitAll()
 
-                // Solo ADMIN puede crear/editar/eliminar cursos.
+                // Solo ADMIN puede crear/editar/eliminar cursos (vista MVC).
                 .requestMatchers("/cursos/guardar", "/cursos/eliminar/**").hasRole("ADMIN")
+
+                // API REST (Leccion 5): la lectura es libre para
+                // cualquier usuario autenticado; crear/editar/eliminar
+                // cursos vía API sigue la misma regla que la vista MVC.
+                .requestMatchers(HttpMethod.POST, "/api/cursos").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.PUT, "/api/cursos/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/api/cursos/**").hasRole("ADMIN")
+                .requestMatchers("/api/**").authenticated()
 
                 // El resto de la aplicacion requiere estar autenticado
                 // (ADMIN o USER).
                 .anyRequest().authenticated()
             )
+            // La API es consumida por clientes externos (Postman,
+            // RestTemplate) que no manejan sesion ni token CSRF,
+            // por eso se excluye solo /api/** de la proteccion CSRF.
+            .csrf(csrf -> csrf
+                .ignoringRequestMatchers(PathPatternRequestMatcher.pathPattern("/api/**"))
+            )
+            // Permite autenticarse en la API mediante
+            // HTTP Basic (usuario/clave), ideal para Postman.
+            .httpBasic(basic -> {})
             .formLogin(form -> form
                 .loginPage("/login")
                 .usernameParameter("correo")
@@ -92,6 +111,16 @@ public class SecurityConfig {
                 .logoutRequestMatcher(PathPatternRequestMatcher.pathPattern(HttpMethod.GET, "/logout"))
                 .logoutSuccessUrl("/login?logout")
                 .permitAll()
+            )
+            // Si una peticion a /api/** no esta autenticada, respondemos
+            // 401 en JSON en lugar de redirigir al formulario de login
+            // (ese redirect es el comportamiento por defecto de formLogin,
+            // pensado para navegadores, no para clientes REST).
+            .exceptionHandling(ex -> ex
+                .defaultAuthenticationEntryPointFor(
+                    new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED),
+                    PathPatternRequestMatcher.pathPattern("/api/**")
+                )
             );
 
         return http.build();

@@ -40,13 +40,7 @@ public class Estudiante {
 	
 	//JPA necesita el constructor vacío
 	public Estudiante() {
-		
-	}
 
-	public Estudiante(int id, String nombre, String email) {
-		this.id = id;
-		this.nombre = nombre;
-		this.email = email;
 	}
 
 	public int getId() {

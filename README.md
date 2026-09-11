@@ -39,7 +39,7 @@ Controller → Service → Repository (Spring Data JPA) → MySQL
 | 2 | Spring MVC (entidades, controladores, vistas) | ✅ Completo |
 | 3 | Acceso a datos (JPA, repositorios, servicios) | ✅ Completo |
 | 4 | Spring Security (roles, login/logout) | ✅ Completo |
-| 5 | API REST + interoperabilidad | 🔲 Pendiente |
+| 5 | API REST + interoperabilidad | ✅ Completo (JWT opcional pendiente) |
 
 ## Requisitos previos
 
@@ -90,6 +90,56 @@ Los usuarios se definen en memoria en `SecurityConfig`, leyendo sus credenciales
 
 La ruta `POST /cursos/guardar` y `POST /cursos/eliminar/**` están restringidas al rol `ADMIN`; el botón "Nuevo Curso" y las acciones de editar/eliminar se ocultan automáticamente en la vista para el rol `USER` (vía `sec:authorize`).
 
+## API REST
+
+Además de las vistas Thymeleaf, el sistema expone una API REST en JSON para Estudiantes y Cursos, pensada para ser consumida por Postman, `RestTemplate` u otro cliente externo.
+
+| Método | Endpoint | Descripción | Acceso |
+|---|---|---|---|
+| `GET` | `/api/estudiantes` | Lista todos los estudiantes | Autenticado |
+| `GET` | `/api/estudiantes/{id}` | Obtiene un estudiante por id | Autenticado |
+| `POST` | `/api/estudiantes` | Crea un estudiante | Autenticado |
+| `PUT` | `/api/estudiantes/{id}` | Actualiza un estudiante | Autenticado |
+| `DELETE` | `/api/estudiantes/{id}` | Elimina un estudiante | Autenticado |
+| `GET` | `/api/cursos` | Lista todos los cursos | Autenticado |
+| `GET` | `/api/cursos/{id}` | Obtiene un curso por id | Autenticado |
+| `POST` | `/api/cursos` | Crea un curso | **Solo ADMIN** |
+| `PUT` | `/api/cursos/{id}` | Actualiza un curso | **Solo ADMIN** |
+| `DELETE` | `/api/cursos/{id}` | Elimina un curso | **Solo ADMIN** |
+
+**Autenticación:** los endpoints `/api/**` usan HTTP Basic (usuario/clave de la tabla de arriba), no requieren sesión de navegador ni token CSRF. Una petición sin credenciales responde `401 Unauthorized` en JSON.
+
+**Códigos de respuesta:** `200` OK, `201` Created (con header `Location`), `204` No Content (delete), `400` Bad Request (regla de negocio violada, ej. correo duplicado), `403` Forbidden (rol insuficiente), `404` Not Found, `409` Conflict (ej. intentar eliminar un curso con inscripciones).
+
+### Probar con curl
+
+```bash
+# Listar cursos
+curl -u admin:admin123 http://localhost:8080/api/cursos
+
+# Crear un curso (solo ADMIN)
+curl -u admin:admin123 -H "Content-Type: application/json" \
+  -d '{"nombre":"Java Básico","descripcion":"Introducción a Java"}' \
+  http://localhost:8080/api/cursos
+
+# Actualizar
+curl -X PUT -u admin:admin123 -H "Content-Type: application/json" \
+  -d '{"nombre":"Java Básico","descripcion":"Actualizado"}' \
+  http://localhost:8080/api/cursos/1
+
+# Eliminar
+curl -X DELETE -u admin:admin123 http://localhost:8080/api/cursos/1
+```
+
+### Probar con Postman
+
+1. En la pestaña **Authorization** de cada request, selecciona **Basic Auth** e ingresa `admin` / `admin123` (o `usuario` / `user123`).
+2. Para `POST`/`PUT`, en **Body** selecciona `raw` + `JSON` y envía, por ejemplo: `{"nombre": "...", "descripcion": "..."}` (cursos) o `{"nombre": "...", "email": "..."}` (estudiantes).
+
+### Pendiente (plus opcional)
+
+- Asegurar los endpoints REST con JWT en lugar de HTTP Basic.
+
 ## Cómo ejecutar el proyecto
 
 ```bash
@@ -104,7 +154,8 @@ La aplicación queda disponible en `http://localhost:8080`.
 ```
 src/main/java/cl/bootcamp/springedumanager_2/
 ├── config/         # Configuración de Spring Security
-├── controller/     # Controladores MVC
+├── controller/     # Controladores MVC + REST (@RestController)
+├── dto/            # DTOs de la API REST (ej. ErrorResponse)
 ├── exception/      # Excepciones de negocio
 ├── model/          # Entidades JPA
 ├── repository/     # Repositorios Spring Data JPA
@@ -123,12 +174,13 @@ src/main/resources/
 - Inscripción de estudiantes en cursos
 - Gestión de Evaluaciones (con control de ponderación máxima de 100% por curso)
 - Autenticación y autorización con Spring Security (roles ADMIN/USER)
+- API REST para Estudiantes y Cursos (`@RestController`, CRUD completo, HTTP Basic)
 
 ## Pendientes
 
-- Exposición de API REST (CRUD vía `@RestController`)
+- Asegurar la API REST con JWT (plus opcional)
 - Gestión de Calificaciones (entidad y repositorio ya definidos)
-- Manejo global de excepciones (`@ControllerAdvice`)
+- Manejo global de excepciones (`@ControllerAdvice`) para las vistas MVC
 - Cobertura de tests
 
 ## Autor
