@@ -219,6 +219,24 @@
                             <!-- EDITAR                        -->
                             <!-- ============================= -->
 
+                            <!--
+                                Guardamos los datos de la evaluación
+                                dentro del botón utilizando data-*.
+
+                                JavaScript los recuperará utilizando:
+
+                                boton.dataset....
+
+                                IMPORTANTE: en data-curso guardamos
+                                el ID del curso, NO el nombre.
+
+                                Ejemplo:
+
+                                Java
+                                id = 1
+
+                                data-curso="1"
+                            -->
                             <button
 
                                 type="button"
@@ -233,39 +251,13 @@
 
                                 data-bs-target="#modalEvaluacion"
 
-
-                                <!--
-                                    Guardamos los datos
-                                    de la evaluación dentro
-                                    del botón utilizando data-*.
-
-                                    JavaScript los recuperará
-                                    utilizando:
-
-                                    boton.dataset....
-                                -->
                                 th:data-id="${evaluacion.id}"
 
                                 th:data-nombre="${evaluacion.nombre}"
 
                                 th:data-ponderacion="${evaluacion.ponderacion}"
 
-
-                                <!--
-                                    IMPORTANTE:
-
-                                    Guardamos el ID del curso,
-                                    NO el nombre.
-
-                                    Ejemplo:
-
-                                    Java
-                                    id = 1
-
-                                    data-curso="1"
-                                -->
                                 th:data-curso="${evaluacion.curso.id}"
-
 
                                 onclick="editarEvaluacion(this)">
 
@@ -591,22 +583,17 @@
 
                                     EvaluacionController
                                 -->
+                                <!--
+                                    El backend recibe el ID del curso
+                                    (th:value) y el usuario ve el
+                                    nombre del curso (th:text).
+                                -->
                                 <option
 
                                     th:each="curso : ${listaCursos}"
 
-
-                                    <!--
-                                        El backend recibe
-                                        el ID del curso.
-                                    -->
                                     th:value="${curso.id}"
 
-
-                                    <!--
-                                        El usuario ve
-                                        el nombre del curso.
-                                    -->
                                     th:text="${curso.nombre}">
 
 
