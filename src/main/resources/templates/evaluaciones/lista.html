@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org"
+
+      th:replace="~{layout/base :: layout(
+            'Evaluaciones',
+            ~{::contenido},
+            ~{::scripts}
+      )}">
+
+<body>
+
+
+<div th:fragment="contenido">
+
+
+    <!-- ================================================= -->
+    <!-- ENCABEZADO                                        -->
+    <!-- ================================================= -->
+
+    <div class="d-flex justify-content-between align-items-center mb-5">
+
+
+        <div>
+
+            <h1>
+                Evaluaciones
+            </h1>
+
+
+            <p class="text-muted">
+
+                Gestión de evaluaciones
+                registradas en el sistema.
+
+            </p>
+
+        </div>
+
+
+
+        <!--
+            Este botón abre el modal.
+
+            No navega hacia otra página.
+
+            La función:
+
+            nuevaEvaluacion()
+
+            limpiará los campos del formulario.
+        -->
+        <button
+            type="button"
+
+            class="btn btn-success"
+
+            data-bs-toggle="modal"
+
+            data-bs-target="#modalEvaluacion"
+
+            onclick="nuevaEvaluacion()">
+
+
+            <i class="fa-solid fa-plus"></i>
+
+            Nueva Evaluación
+
+        </button>
+
+
+    </div>
+
+
+
+    <!-- ================================================= -->
+    <!-- TABLA DE EVALUACIONES                             -->
+    <!-- ================================================= -->
+
+    <div class="card shadow-sm">
+
+
+        <div class="card-body">
+
+
+            <!--
+                Le agregamos un ID a la tabla.
+
+                Esto nos servirá posteriormente
+                si queremos convertirla
+                en una DataTable.
+            -->
+            <table
+                id="tablaEvaluaciones"
+
+                class="table table-dark
+                       table-striped
+                       table-hover
+                       align-middle mb-0">
+
+
+                <thead>
+
+
+                    <tr>
+
+                        <th>ID</th>
+
+                        <th>Evaluación</th>
+
+                        <th>Curso</th>
+
+                        <th>Ponderación</th>
+
+                        <th>Opciones</th>
+
+                    </tr>
+
+
+                </thead>
+
+
+
+                <tbody>
+
+
+                    <!--
+                        Recorremos:
+
+                        listaEvaluaciones
+
+                        que fue enviada desde:
+
+                        EvaluacionController
+                    -->
+                    <tr
+                        th:each="evaluacion : ${listaEvaluaciones}">
+
+
+                        <!-- ================================= -->
+                        <!-- ID                                -->
+                        <!-- ================================= -->
+
+                        <td
+                            th:text="${evaluacion.id}">
+                        </td>
+
+
+
+                        <!-- ================================= -->
+                        <!-- NOMBRE EVALUACIÓN                 -->
+                        <!-- ================================= -->
+
+                        <td
+                            th:text="${evaluacion.nombre}">
+                        </td>
+
+
+
+                        <!-- ================================= -->
+                        <!-- CURSO                             -->
+                        <!-- ================================= -->
+
+                        <!--
+                            Evaluacion ahora tiene:
+
+                            private Curso curso;
+
+                            por eso podemos acceder:
+
+                            evaluacion.curso.nombre
+                        -->
+                        <td
+                            th:text="${evaluacion.curso.nombre}">
+                        </td>
+
+
+
+                        <!-- ================================= -->
+                        <!-- PONDERACIÓN                       -->
+                        <!-- ================================= -->
+
+                        <td>
+
+
+                            <!--
+                                Mostramos el valor almacenado.
+
+                                Ejemplo:
+
+                                30
+                            -->
+                            <span
+                                th:text="${evaluacion.ponderacion}">
+                            </span>
+
+
+                            <!--
+                                Agregamos visualmente
+                                el símbolo porcentaje.
+                            -->
+                            %
+
+
+                        </td>
+
+
+
+                        <!-- ================================= -->
+                        <!-- OPCIONES                          -->
+                        <!-- ================================= -->
+
+                        <td>
+
+
+
+                            <!-- ============================= -->
+                            <!-- EDITAR                        -->
+                            <!-- ============================= -->
+
+                            <button
+
+                                type="button"
+
+                                class="btn btn-link
+                                       text-warning
+                                       p-0 me-2"
+
+                                title="Editar"
+
+                                data-bs-toggle="modal"
+
+                                data-bs-target="#modalEvaluacion"
+
+
+                                <!--
+                                    Guardamos los datos
+                                    de la evaluación dentro
+                                    del botón utilizando data-*.
+
+                                    JavaScript los recuperará
+                                    utilizando:
+
+                                    boton.dataset....
+                                -->
+                                th:data-id="${evaluacion.id}"
+
+                                th:data-nombre="${evaluacion.nombre}"
+
+                                th:data-ponderacion="${evaluacion.ponderacion}"
+
+
+                                <!--
+                                    IMPORTANTE:
+
+                                    Guardamos el ID del curso,
+                                    NO el nombre.
+
+                                    Ejemplo:
+
+                                    Java
+                                    id = 1
+
+                                    data-curso="1"
+                                -->
+                                th:data-curso="${evaluacion.curso.id}"
+
+
+                                onclick="editarEvaluacion(this)">
+
+
+                                <i class="fa-solid fa-pen-to-square"></i>
+
+
+                            </button>
+
+
+
+                            <!-- ============================= -->
+                            <!-- ELIMINAR                      -->
+                            <!-- ============================= -->
+
+                            <!--
+                                Seguimos utilizando POST
+                                durante esta Clase 2.
+
+                                Posteriormente podremos
+                                evolucionar hacia:
+
+                                DELETE /api/evaluaciones/{id}
+                            -->
+                            <form
+
+                                th:action="@{/evaluaciones/eliminar/{id}(id=${evaluacion.id})}"
+
+                                method="post"
+
+                                class="d-inline form-eliminar">
+
+
+                                <button
+
+                                    type="submit"
+
+                                    class="btn btn-link
+                                           text-danger p-0"
+
+                                    title="Eliminar">
+
+
+                                    <i class="fa-solid fa-trash"></i>
+
+
+                                </button>
+
+
+                            </form>
+
+
+                        </td>
+
+
+                    </tr>
+
+
+                </tbody>
+
+
+            </table>
+
+
+        </div>
+
+
+    </div>
+
+
+
+    <!-- ================================================= -->
+    <!-- MODAL NUEVA / EDITAR EVALUACIÓN                   -->
+    <!-- ================================================= -->
+
+    <div
+
+        class="modal fade"
+
+        id="modalEvaluacion"
+
+        tabindex="-1"
+
+        aria-labelledby="tituloModalEvaluacion"
+
+        aria-hidden="true">
+
+
+        <div class="modal-dialog">
+
+
+            <div class="modal-content">
+
+
+
+                <!-- ========================================= -->
+                <!-- CABECERA DEL MODAL                        -->
+                <!-- ========================================= -->
+
+                <div class="modal-header">
+
+
+                    <h5
+                        class="modal-title"
+
+                        id="tituloModalEvaluacion">
+
+
+                        Nueva Evaluación
+
+
+                    </h5>
+
+
+
+                    <button
+
+                        type="button"
+
+                        class="btn-close"
+
+                        data-bs-dismiss="modal"
+
+                        aria-label="Cerrar">
+
+                    </button>
+
+
+                </div>
+
+
+
+                <!-- ========================================= -->
+                <!-- FORMULARIO                                -->
+                <!-- ========================================= -->
+
+                <!--
+                    Siempre enviamos:
+
+                    POST /evaluaciones/guardar
+
+
+                    El formulario enviará:
+
+                    id
+                    nombre
+                    ponderacion
+                    cursoId
+
+
+                    El Controller determinará:
+
+                    id == 0
+                    ↓
+                    CREATE
+
+
+                    id != 0
+                    ↓
+                    UPDATE
+                -->
+                <form
+
+                    th:action="@{/evaluaciones/guardar}"
+
+                    method="post">
+
+
+
+                    <div class="modal-body">
+
+
+
+                        <!-- ================================= -->
+                        <!-- ID OCULTO                         -->
+                        <!-- ================================= -->
+
+                        <!--
+                            Nueva evaluación:
+
+                            id = 0
+
+
+                            Editar:
+
+                            id = ID existente
+                        -->
+                        <input
+
+                            type="hidden"
+
+                            id="idEvaluacion"
+
+                            name="id"
+
+                            value="0">
+
+
+
+                        <!-- ================================= -->
+                        <!-- NOMBRE                            -->
+                        <!-- ================================= -->
+
+                        <div class="mb-3">
+
+
+                            <label
+
+                                for="nombreEvaluacion"
+
+                                class="form-label">
+
+
+                                Nombre Evaluación
+
+
+                            </label>
+
+
+
+                            <!--
+                                name="nombre"
+
+                                coincide con el parámetro
+                                recibido por el Controller:
+
+                                @RequestParam
+                                String nombre
+                            -->
+                            <input
+
+                                type="text"
+
+                                id="nombreEvaluacion"
+
+                                name="nombre"
+
+                                class="form-control"
+
+                                placeholder="Ej: Prueba 1"
+
+                                required>
+
+
+                        </div>
+
+
+
+                        <!-- ================================= -->
+                        <!-- CURSO                             -->
+                        <!-- ================================= -->
+
+                        <div class="mb-3">
+
+
+                            <label
+
+                                for="cursoEvaluacion"
+
+                                class="form-label">
+
+
+                                Curso
+
+
+                            </label>
+
+
+
+                            <!--
+                                Antes utilizábamos:
+
+                                <input type="text">
+
+                                porque Curso era simplemente
+                                un String.
+
+
+                                Ahora Evaluacion tiene:
+
+                                @ManyToOne
+                                private Curso curso;
+
+
+                                Por eso mostramos un SELECT
+                                con los cursos existentes.
+                            -->
+                            <select
+
+                                id="cursoEvaluacion"
+
+                                name="cursoId"
+
+                                class="form-select"
+
+                                required>
+
+
+
+                                <!--
+                                    Opción inicial.
+
+                                    value=""
+
+                                    significa que todavía
+                                    no se ha seleccionado
+                                    ningún curso.
+                                -->
+                                <option value="">
+
+                                    Seleccione un curso
+
+                                </option>
+
+
+
+                                <!--
+                                    Recorremos:
+
+                                    listaCursos
+
+                                    enviada desde:
+
+                                    EvaluacionController
+                                -->
+                                <option
+
+                                    th:each="curso : ${listaCursos}"
+
+
+                                    <!--
+                                        El backend recibe
+                                        el ID del curso.
+                                    -->
+                                    th:value="${curso.id}"
+
+
+                                    <!--
+                                        El usuario ve
+                                        el nombre del curso.
+                                    -->
+                                    th:text="${curso.nombre}">
+
+
+                                </option>
+
+
+                            </select>
+
+
+
+                            <!--
+                                Ejemplo:
+
+                                El usuario ve:
+
+                                Java
+
+
+                                pero el formulario envía:
+
+                                cursoId=1
+                            -->
+
+
+                        </div>
+
+
+
+                        <!-- ================================= -->
+                        <!-- PONDERACIÓN                       -->
+                        <!-- ================================= -->
+
+                        <div class="mb-3">
+
+
+                            <label
+
+                                for="ponderacionEvaluacion"
+
+                                class="form-label">
+
+
+                                Ponderación (%)
+
+
+                            </label>
+
+
+
+                            <!--
+                                La ponderación representa
+                                el porcentaje de la evaluación.
+
+                                Ejemplo:
+
+                                30
+                                significa 30%.
+
+
+                                step="0.1"
+
+                                permite valores como:
+
+                                25.5
+
+
+                                min y max son una primera
+                                validación en el navegador.
+
+                                IMPORTANTE:
+
+                                La validación real continúa
+                                estando en EvaluacionService.
+                            -->
+                            <input
+
+                                type="number"
+
+                                step="0.1"
+
+                                min="0.1"
+
+                                max="100"
+
+                                id="ponderacionEvaluacion"
+
+                                name="ponderacion"
+
+                                class="form-control"
+
+                                placeholder="Ej: 30"
+
+                                required>
+
+
+                        </div>
+
+
+                    </div>
+
+
+
+                    <!-- ===================================== -->
+                    <!-- PIE DEL MODAL                         -->
+                    <!-- ===================================== -->
+
+                    <div class="modal-footer">
+
+
+                        <button
+
+                            type="button"
+
+                            class="btn btn-secondary"
+
+                            data-bs-dismiss="modal">
+
+
+                            Cancelar
+
+
+                        </button>
+
+
+
+                        <button
+
+                            type="submit"
+
+                            class="btn btn-primary">
+
+
+                            <i class="fa-solid fa-floppy-disk"></i>
+
+                            Guardar
+
+
+                        </button>
+
+
+                    </div>
+
+
+                </form>
+
+
+            </div>
+
+
+        </div>
+
+
+    </div>
+
+
+</div>
+
+
+
+<!-- ===================================================== -->
+<!-- SCRIPTS DE ESTA PÁGINA                               -->
+<!-- ===================================================== -->
+
+<th:block th:fragment="scripts">
+
+
+    <!--
+        Este JavaScript solamente será
+        cargado cuando se muestre
+        la vista Evaluaciones.
+
+        Contiene:
+
+        nuevaEvaluacion()
+
+        editarEvaluacion()
+    -->
+    <script
+        th:src="@{/js/evaluaciones/evaluaciones.js}">
+    </script>
+
+
+</th:block>
+
+
+</body>
+
+</html>
