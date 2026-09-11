@@ -2,6 +2,7 @@
 
 <html lang="es"
       xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
 
       th:replace="~{layout/base :: layout(
             'Cursos',
@@ -56,6 +57,8 @@
 
             data-bs-toggle="modal"
             data-bs-target="#modalCurso"
+
+            sec:authorize="hasRole('ADMIN')"
 
             onclick="nuevoCurso()">
 
@@ -160,6 +163,8 @@
                                 data-nombre="Python"
                                 data-descripcion="Bootcamp..."
                             -->
+                            <span sec:authorize="hasRole('ADMIN')">
+
                             <button
                                 type="button"
 
@@ -223,6 +228,8 @@
 
 
                             </form>
+
+                            </span>
 
 
                         </td>

@@ -13,6 +13,7 @@ Permite administrar estudiantes, cursos, inscripciones y evaluaciones desde una 
 - **MySQL** — base de datos
 - **Thymeleaf** — motor de plantillas
 - **Bean Validation** (`spring-boot-starter-validation`)
+- **Spring Security** — autenticación y autorización basada en roles
 - **Maven** — gestor de dependencias y ciclo de vida
 - **Bootstrap 5 + SweetAlert2** — interfaz de usuario
 
@@ -37,7 +38,7 @@ Controller → Service → Repository (Spring Data JPA) → MySQL
 | 1 | Gestor de proyectos (Maven) | ✅ Completo |
 | 2 | Spring MVC (entidades, controladores, vistas) | ✅ Completo |
 | 3 | Acceso a datos (JPA, repositorios, servicios) | ✅ Completo |
-| 4 | Spring Security (roles, login/logout) | 🔲 Pendiente |
+| 4 | Spring Security (roles, login/logout) | ✅ Completo |
 | 5 | API REST + interoperabilidad | 🔲 Pendiente |
 
 ## Requisitos previos
@@ -76,6 +77,19 @@ export DB_PASSWORD=tu_password
 
 **Desde el IDE (Eclipse/IntelliJ):** configura `DB_PASSWORD` (y opcionalmente `DB_USERNAME`, `DB_URL`) en la configuración de ejecución (Run Configuration) de la aplicación.
 
+## Autenticación y roles
+
+La aplicación está protegida con Spring Security. Todas las rutas requieren haber iniciado sesión, excepto `/login` y los recursos estáticos.
+
+| Usuario | Contraseña | Rol | Permisos |
+|---|---|---|---|
+| `admin` | `admin123` | `ADMIN` | Acceso total, incluyendo crear/editar/eliminar cursos |
+| `usuario` | `user123` | `USER` | Solo lectura/navegación (no puede crear, editar ni eliminar cursos) |
+
+Los usuarios se definen en memoria en `SecurityConfig`, leyendo sus credenciales desde `application.properties` (`app.security.admin.*` / `app.security.user.*`). Las contraseñas se almacenan cifradas con BCrypt.
+
+La ruta `POST /cursos/guardar` y `POST /cursos/eliminar/**` están restringidas al rol `ADMIN`; el botón "Nuevo Curso" y las acciones de editar/eliminar se ocultan automáticamente en la vista para el rol `USER` (vía `sec:authorize`).
+
 ## Cómo ejecutar el proyecto
 
 ```bash
@@ -89,6 +103,7 @@ La aplicación queda disponible en `http://localhost:8080`.
 
 ```
 src/main/java/cl/bootcamp/springedumanager_2/
+├── config/         # Configuración de Spring Security
 ├── controller/     # Controladores MVC
 ├── exception/      # Excepciones de negocio
 ├── model/          # Entidades JPA
@@ -107,10 +122,10 @@ src/main/resources/
 - CRUD de Cursos
 - Inscripción de estudiantes en cursos
 - Gestión de Evaluaciones (con control de ponderación máxima de 100% por curso)
+- Autenticación y autorización con Spring Security (roles ADMIN/USER)
 
 ## Pendientes
 
-- Autenticación y autorización con Spring Security (roles ADMIN/USER)
 - Exposición de API REST (CRUD vía `@RestController`)
 - Gestión de Calificaciones (entidad y repositorio ya definidos)
 - Manejo global de excepciones (`@ControllerAdvice`)

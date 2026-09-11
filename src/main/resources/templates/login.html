@@ -25,17 +25,26 @@
 					
 						<h2 class="text-center mb-2">Sistema SpringEduManager</h2>
 						<p class="mb-4 text-center text-muted">Iniciar Sesión</p>
-						
-											
+
+						<!-- Mensaje de error de autenticacion -->
+						<div class="alert alert-danger" th:if="${param.error != null}">
+							Usuario o contraseña incorrectos.
+						</div>
+
+						<!-- Mensaje de sesion cerrada -->
+						<div class="alert alert-success" th:if="${param.logout != null}">
+							Sesión cerrada correctamente.
+						</div>
+
 						<!-- Formulario  -->
-						<form action="" method="POST">
+						<form th:action="@{/login}" method="POST">
 							<div class="mb-3">
-								<label class="form-lable">Correo</label> 
-								<input 
-								type="email" 
-								class="form-control" 
-								name="correo" 
-								placeholder="correo@SpringEduManager.cl" 
+								<label class="form-lable">Correo</label>
+								<input
+								type="text"
+								class="form-control"
+								name="correo"
+								placeholder="admin o usuario"
 								>
 							</div>
 							
@@ -78,8 +87,8 @@
 						</form>
 						
 						<div class="mt-4">
-						Usuario de prueba: admin@springedumanager.cl <br>
-						Contraseña: 1234
+						<strong>Administrador:</strong> admin / admin123 <br>
+						<strong>Usuario:</strong> usuario / user123
 						</div>
 					</div>
 				</div>

@@ -8,7 +8,9 @@ public class LoginController {
 	
 	@GetMapping("/")
 	public String irLogin() {
-		return "redirect:/login";//Redirigir hacia /login
+		// Los usuarios no autenticados seran redirigidos a /login
+		// automaticamente por Spring Security antes de llegar aqui.
+		return "redirect:/home";
 	}
 	
 	@GetMapping("/login")
